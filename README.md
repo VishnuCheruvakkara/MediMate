@@ -166,38 +166,6 @@ flutter pub get
 flutter run --dart-define-from-file=.env.flutter.json
 ```
 
-## API endpoints
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/health` | Check service availability |
-| `GET` | `/api/v1/medicines` | List medicines |
-| `POST` | `/api/v1/medicines` | Create a medicine and schedules |
-| `GET` | `/api/v1/medicines/{id}` | Retrieve one medicine |
-| `PATCH` | `/api/v1/medicines/{id}` | Update a medicine or schedules |
-| `DELETE` | `/api/v1/medicines/{id}` | Delete a medicine |
-| `GET` | `/api/v1/fever-entries` | List fever entries newest first |
-| `POST` | `/api/v1/fever-entries` | Record temperature and symptoms |
-| `GET` | `/api/v1/fever-entries/{id}` | Retrieve one fever entry |
-| `PATCH` | `/api/v1/fever-entries/{id}` | Update a fever entry |
-| `DELETE` | `/api/v1/fever-entries/{id}` | Delete a fever entry |
-
-Example request:
-
-```json
-{
-  "name": "Example medicine",
-  "dosage": "Use only as prescribed",
-  "instructions": "Follow clinician instructions",
-  "schedules": [
-    {
-      "time_of_day": "09:00:00",
-      "interval_days": 1
-    }
-  ]
-}
-```
-
 ## Configuration and secrets
 
 Local configuration files are intentionally excluded from Git:
@@ -225,21 +193,6 @@ timestamps are used by the backend to support this direction.
 The backend groups code by feature and separates API routes, validation
 schemas, persistence models, and business operations. Database migrations and
 authentication will be introduced before production deployment.
-
-## Roadmap
-
-- [x] Initialize Flutter Android project.
-- [x] Create FastAPI medicine and schedule API.
-- [x] Add local and PostgreSQL-ready backend configuration.
-- [x] Protect local secrets from Git.
-- [ ] Build the Flutter dashboard and medicine form.
-- [ ] Build the Flutter fever log and temperature timeline.
-- [ ] Add Riverpod, Drift, and repository interfaces.
-- [ ] Implement local Android notifications and permission handling.
-- [ ] Track taken, skipped, and missed doses.
-- [ ] Add authentication and Alembic database migrations.
-- [ ] Implement conflict-aware offline synchronization.
-- [ ] Add integration tests and generate a release APK.
 
 ## Contributing
 
