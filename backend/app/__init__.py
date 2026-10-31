@@ -1,0 +1,2 @@
+"""MediMate API package."""
+
