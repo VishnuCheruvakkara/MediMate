@@ -20,12 +20,16 @@ def test_medicine_crud(db):
                 "name": "Paracetamol",
                 "dosage": "As prescribed",
                 "instructions": "Follow clinician instructions",
+                "food_timing": "after_food",
+                "dose_pattern": "1-1-1",
                 "schedules": [{"time_of_day": "09:00:00", "interval_days": 1}],
             }
         ),
     )
     assert created.name == "Paracetamol"
     assert len(created.schedules) == 1
+    assert created.food_timing == "after_food"
+    assert created.dose_pattern == "1-1-1"
 
     assert len(list_medicines(db)) == 1
 
@@ -45,6 +49,32 @@ def test_rejects_invalid_schedule():
                 "name": "Example",
                 "dosage": "As prescribed",
                 "schedules": [{"time_of_day": "09:00:00", "interval_days": 0}],
+            }
+        )
+
+
+def test_accepts_hourly_interval_schedule():
+    payload = MedicineCreate.model_validate(
+        {
+            "name": "Example",
+            "dosage": "As prescribed",
+            "schedule_mode": "interval",
+            "interval_hours": 4,
+            "interval_start_time": "08:00:00",
+            "schedules": [],
+        }
+    )
+    assert payload.interval_hours == 4
+
+
+def test_rejects_interval_without_start_time():
+    with pytest.raises(ValidationError):
+        MedicineCreate.model_validate(
+            {
+                "name": "Example",
+                "dosage": "As prescribed",
+                "schedule_mode": "interval",
+                "interval_hours": 4,
             }
         )
 

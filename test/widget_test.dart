@@ -50,6 +50,11 @@ class FakeMedicineRepository implements MedicineRepository {
       name: input.name,
       dosage: input.dosage,
       instructions: input.instructions,
+      foodTiming: input.foodTiming,
+      dosePattern: input.dosePattern,
+      scheduleMode: input.scheduleMode,
+      intervalHours: input.intervalHours,
+      intervalStartTime: input.intervalStartTime,
       isActive: input.isActive,
       schedules: input.schedules,
     );
@@ -69,6 +74,11 @@ class FakeMedicineRepository implements MedicineRepository {
       name: input.name,
       dosage: input.dosage,
       instructions: input.instructions,
+      foodTiming: input.foodTiming,
+      dosePattern: input.dosePattern,
+      scheduleMode: input.scheduleMode,
+      intervalHours: input.intervalHours,
+      intervalStartTime: input.intervalStartTime,
       isActive: input.isActive,
       schedules: input.schedules,
     );
@@ -220,5 +230,44 @@ void main() {
 
     expect(find.text('Add at least one dose time'), findsOneWidget);
     expect(repository.medicines, isEmpty);
+  });
+
+  testWidgets('saves a flexible hourly-gap prescription', (tester) async {
+    final repository = FakeMedicineRepository();
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: FakeFeverRepository(),
+        medicineRepository: repository,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('addMedicineButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('medicineNameField')),
+      'Medicine A',
+    );
+    await tester.enterText(
+      find.byKey(const Key('medicineDosageField')),
+      '1 tablet',
+    );
+    await tester.enterText(find.byKey(const Key('dosePatternField')), '1-1-1');
+    await tester.ensureVisible(find.text('Hourly gap'));
+    await tester.tap(find.text('Hourly gap'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('6 hours'));
+    await tester.tap(find.text('6 hours'));
+    await tester.tap(find.byKey(const Key('intervalStartTimeButton')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('saveMedicineButton')));
+    await tester.tap(find.byKey(const Key('saveMedicineButton')));
+    await tester.pumpAndSettle();
+
+    expect(repository.medicines, hasLength(1));
+    expect(repository.medicines.single.dosePattern, '1-1-1');
+    expect(repository.medicines.single.scheduleMode, 'interval');
+    expect(repository.medicines.single.intervalHours, 6);
   });
 }

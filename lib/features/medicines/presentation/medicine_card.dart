@@ -77,8 +77,35 @@ class MedicineCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      Chip(
+                        avatar: const Icon(Icons.restaurant_outlined, size: 16),
+                        label: Text(_foodTimingLabel(medicine.foodTiming)),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      if (medicine.dosePattern != null)
+                        Chip(
+                          avatar: const Icon(
+                            Icons.format_list_numbered,
+                            size: 16,
+                          ),
+                          label: Text(medicine.dosePattern!),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
-                  if (medicine.schedules.isEmpty)
+                  if (medicine.scheduleMode == 'interval')
+                    Chip(
+                      avatar: const Icon(Icons.timelapse, size: 16),
+                      label: Text(_intervalLabel(context, medicine)),
+                      visualDensity: VisualDensity.compact,
+                    )
+                  else if (medicine.schedules.isEmpty)
                     Text(
                       'No dose times',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -124,4 +151,26 @@ class MedicineCard extends StatelessWidget {
     if (schedule.intervalDays == 1) return time;
     return '$time · every ${schedule.intervalDays} days';
   }
+
+  String _intervalLabel(BuildContext context, Medicine medicine) {
+    final start = medicine.intervalStartTime;
+    if (start == null || medicine.intervalHours == null) {
+      return 'Interval schedule';
+    }
+    final parts = start.split(':');
+    final time = TimeOfDay(
+      hour: int.parse(parts[0]),
+      minute: int.parse(parts[1]),
+    ).format(context);
+    return 'Every ${medicine.intervalHours}h from $time';
+  }
+
+  String _foodTimingLabel(String value) => switch (value) {
+    'before_food' => 'Before food',
+    'after_food' => 'After food',
+    'with_food' => 'With food',
+    'empty_stomach' => 'Empty stomach',
+    'anytime' => 'Any time',
+    _ => 'As directed',
+  };
 }
