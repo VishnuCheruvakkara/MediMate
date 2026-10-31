@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     database_url: str = "sqlite:///./medimate.db"
     cors_origins: list[str] = []
+    cors_origin_regex: str | None = r"https?://(localhost|127\.0\.0\.1)(:\d+)?$"
 
     model_config = SettingsConfigDict(
         env_file=".env",
