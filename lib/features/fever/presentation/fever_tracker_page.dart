@@ -12,8 +12,13 @@ import 'package:medimate/features/fever/presentation/fever_entry_sheet.dart';
 import 'package:medimate/features/fever/presentation/fever_summary_card.dart';
 
 class FeverTrackerPage extends StatefulWidget {
-  const FeverTrackerPage({super.key, required this.repository});
+  const FeverTrackerPage({
+    super.key,
+    required this.repository,
+    this.showAppBar = true,
+  });
   final FeverRepository repository;
+  final bool showAppBar;
 
   @override
   State<FeverTrackerPage> createState() => _FeverTrackerPageState();
@@ -35,17 +40,19 @@ class _FeverTrackerPageState extends State<FeverTrackerPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const AppBrandTitle(),
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: _loading ? null : _loadEntries,
-            icon: const Icon(Icons.refresh),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      appBar: widget.showAppBar
+          ? AppBar(
+              title: const AppBrandTitle(),
+              actions: [
+                IconButton(
+                  tooltip: 'Refresh',
+                  onPressed: _loading ? null : _loadEntries,
+                  icon: const Icon(Icons.refresh),
+                ),
+                const SizedBox(width: 8),
+              ],
+            )
+          : null,
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('addEntryButton'),
         onPressed: _saving ? null : () => _openEntrySheet(),

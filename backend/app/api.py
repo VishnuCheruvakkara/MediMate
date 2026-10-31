@@ -8,11 +8,13 @@ from app.core.config import get_settings
 from app.core.database import Base, engine
 from app.features.fever.router import router as fever_router
 from app.features.medicines.router import router as medicines_router
+from app.features.medicines.migrations import ensure_development_columns
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     Base.metadata.create_all(bind=engine)
+    ensure_development_columns(engine)
     yield
     engine.dispose()
 
