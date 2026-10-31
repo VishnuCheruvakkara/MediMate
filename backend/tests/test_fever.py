@@ -4,7 +4,11 @@ import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
 
-from app.features.fever.schemas import FeverEntryCreate, FeverEntryUpdate
+from app.features.fever.schemas import (
+    FeverEntryCreate,
+    FeverEntryRead,
+    FeverEntryUpdate,
+)
 from app.features.fever.service import (
     create_entry,
     delete_entry,
@@ -28,6 +32,8 @@ def test_fever_entry_crud(db):
     assert created.temperature_c == 38.2
     assert created.symptoms == ["headache", "fatigue"]
     assert len(list_entries(db)) == 1
+    serialized = FeverEntryRead.model_validate(created)
+    assert serialized.measured_at.tzinfo is not None
 
     updated = update_entry(db, created.id, FeverEntryUpdate(medicine_taken=True))
     assert updated.medicine_taken is True

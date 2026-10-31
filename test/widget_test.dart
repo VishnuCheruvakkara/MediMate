@@ -1,30 +1,79 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:medimate/app/app.dart';
+import 'package:medimate/features/fever/domain/fever_entry.dart';
 
-import 'package:medimate/main.dart';
+class FakeFeverRepository implements FeverRepository {
+  FakeFeverRepository({this.entries = const []});
+  List<FeverEntry> entries;
+
+  @override
+  Future<List<FeverEntry>> listEntries() async => entries;
+
+  @override
+  Future<FeverEntry> createEntry(FeverEntryInput input) async {
+    final entry = FeverEntry(
+      id: 'new-entry',
+      temperatureC: input.temperatureC,
+      measuredAt: input.measuredAt,
+      measurementMethod: input.measurementMethod,
+      symptoms: input.symptoms,
+      notes: input.notes,
+      medicineTaken: input.medicineTaken,
+    );
+    entries = [entry, ...entries];
+    return entry;
+  }
+
+  @override
+  Future<void> deleteEntry(String id) async {
+    entries = entries.where((entry) => entry.id != id).toList();
+  }
+
+  @override
+  Future<FeverEntry> updateEntry(String id, FeverEntryInput input) async =>
+      createEntry(input);
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('shows the empty fever tracker', (tester) async {
+    await tester.pumpWidget(MediMateApp(repository: FakeFeverRepository()));
+    await tester.pumpAndSettle();
+    expect(find.text('Fever tracker'), findsOneWidget);
+    expect(find.text('No fever readings yet'), findsOneWidget);
+    expect(find.text('Add reading'), findsOneWidget);
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  testWidgets('validates and saves a temperature reading', (tester) async {
+    final repository = FakeFeverRepository();
+    await tester.pumpWidget(MediMateApp(repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('addEntryButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('temperatureField')), '38.2');
+    await tester.ensureVisible(find.byKey(const Key('saveEntryButton')));
+    await tester.tap(find.byKey(const Key('saveEntryButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('38.2°C'), findsWidgets);
+    expect(repository.entries, hasLength(1));
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('accepts Fahrenheit and stores normalized Celsius', (
+    tester,
+  ) async {
+    final repository = FakeFeverRepository();
+    await tester.pumpWidget(MediMateApp(repository: repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('addEntryButton')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('temperatureUnitField')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('°F').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('temperatureField')), '100.4');
+    await tester.ensureVisible(find.byKey(const Key('saveEntryButton')));
+    await tester.tap(find.byKey(const Key('saveEntryButton')));
+    await tester.pumpAndSettle();
+    expect(repository.entries.single.temperatureC, closeTo(38, 0.01));
   });
 }

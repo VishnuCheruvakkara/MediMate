@@ -136,8 +136,9 @@ From the repository root, create the ignored local configuration:
 cp .env.flutter.example .env.flutter.json
 ```
 
-The default `API_BASE_URL` is `http://10.0.2.2:8000`, which lets an Android
-emulator reach a backend running on the Ubuntu host.
+The default `API_BASE_URL` is `http://127.0.0.1:8000` for the Chrome preview.
+For an Android emulator, change it to `http://10.0.2.2:8000` so the emulator
+can reach a backend running on the Ubuntu host.
 
 For a physical Android phone, use the computer's LAN address in the ignored
 `.env.flutter.json` file, for example:
