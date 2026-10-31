@@ -96,6 +96,11 @@ void main() {
     await tester.pumpWidget(MediMateApp(repository: repository));
     await tester.pumpAndSettle();
     expect(find.text('38.0°C'), findsWidgets);
+    expect(find.text('Fever-range reading'), findsOneWidget);
+    expect(
+      find.byKey(const Key('temperatureContextIndicator')),
+      findsOneWidget,
+    );
 
     await tester.tap(
       find.descendant(
