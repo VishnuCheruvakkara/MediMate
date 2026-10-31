@@ -104,64 +104,52 @@ class _FeverEntrySheetState extends State<FeverEntrySheet> {
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      key: const Key('temperatureField'),
-                      controller: _temperatureController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+              TextFormField(
+                key: const Key('temperatureField'),
+                controller: _temperatureController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Temperature',
+                  prefixIcon: const Icon(Icons.thermostat_outlined),
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<TemperatureUnit>(
+                        key: const Key('temperatureUnitField'),
+                        value: _unit,
+                        borderRadius: BorderRadius.circular(14),
+                        items: const [
+                          DropdownMenuItem(
+                            value: TemperatureUnit.celsius,
+                            child: Text('°C'),
+                          ),
+                          DropdownMenuItem(
+                            value: TemperatureUnit.fahrenheit,
+                            child: Text('°F'),
+                          ),
+                        ],
+                        onChanged: (unit) {
+                          if (unit != null) _changeUnit(unit);
+                        },
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Temperature',
-                        prefixIcon: Icon(Icons.thermostat_outlined),
-                      ),
-                      validator: (value) {
-                        final temperature = double.tryParse(
-                          value?.trim() ?? '',
-                        );
-                        if (temperature == null) return 'Enter a temperature';
-                        final minimum = _unit == TemperatureUnit.celsius
-                            ? 30
-                            : 86;
-                        final maximum = _unit == TemperatureUnit.celsius
-                            ? 45
-                            : 113;
-                        if (temperature < minimum || temperature > maximum) {
-                          final symbol = _unit == TemperatureUnit.celsius
-                              ? '°C'
-                              : '°F';
-                          return '$minimum–$maximum$symbol allowed';
-                        }
-                        return null;
-                      },
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    width: 104,
-                    child: DropdownButtonFormField<TemperatureUnit>(
-                      key: const Key('temperatureUnitField'),
-                      initialValue: _unit,
-                      decoration: const InputDecoration(labelText: 'Unit'),
-                      items: const [
-                        DropdownMenuItem(
-                          value: TemperatureUnit.celsius,
-                          child: Text('°C'),
-                        ),
-                        DropdownMenuItem(
-                          value: TemperatureUnit.fahrenheit,
-                          child: Text('°F'),
-                        ),
-                      ],
-                      onChanged: (unit) {
-                        if (unit != null) _changeUnit(unit);
-                      },
-                    ),
-                  ),
-                ],
+                ),
+                validator: (value) {
+                  final temperature = double.tryParse(value?.trim() ?? '');
+                  if (temperature == null) return 'Enter a temperature';
+                  final minimum = _unit == TemperatureUnit.celsius ? 30 : 86;
+                  final maximum = _unit == TemperatureUnit.celsius ? 45 : 113;
+                  if (temperature < minimum || temperature > maximum) {
+                    final symbol = _unit == TemperatureUnit.celsius
+                        ? '°C'
+                        : '°F';
+                    return '$minimum–$maximum$symbol allowed';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(

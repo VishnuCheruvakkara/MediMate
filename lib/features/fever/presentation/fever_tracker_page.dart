@@ -15,7 +15,6 @@ class _FeverTrackerPageState extends State<FeverTrackerPage> {
   bool _loading = true;
   bool _saving = false;
   String? _error;
-  TemperatureUnit _unit = TemperatureUnit.celsius;
 
   @override
   void initState() {
@@ -79,28 +78,11 @@ class _FeverTrackerPageState extends State<FeverTrackerPage> {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: SegmentedButton<TemperatureUnit>(
-                      segments: const [
-                        ButtonSegment(
-                          value: TemperatureUnit.celsius,
-                          label: Text('°C'),
-                        ),
-                        ButtonSegment(
-                          value: TemperatureUnit.fahrenheit,
-                          label: Text('°F'),
-                        ),
-                      ],
-                      selected: {_unit},
-                      onSelectionChanged: (selection) {
-                        setState(() => _unit = selection.first);
-                      },
-                    ),
-                  ),
                   const SizedBox(height: 22),
-                  _SummaryCard(entry: _entries.firstOrNull, unit: _unit),
+                  _SummaryCard(
+                    entry: _entries.firstOrNull,
+                    unit: TemperatureUnit.celsius,
+                  ),
                   const SizedBox(height: 26),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -136,7 +118,7 @@ class _FeverTrackerPageState extends State<FeverTrackerPage> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _EntryCard(
                           entry: entry,
-                          unit: _unit,
+                          unit: TemperatureUnit.celsius,
                           onEdit: () => _openEntrySheet(entry),
                           onDelete: () => _confirmDelete(entry),
                         ),
@@ -178,7 +160,7 @@ class _FeverTrackerPageState extends State<FeverTrackerPage> {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: false,
-      builder: (_) => FeverEntrySheet(initial: entry, initialUnit: _unit),
+      builder: (_) => FeverEntrySheet(initial: entry),
     );
     if (input == null || !mounted) return;
     setState(() => _saving = true);
