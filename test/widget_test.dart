@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medimate/app/app.dart';
 import 'package:medimate/features/fever/domain/fever_entry.dart';
+import 'package:medimate/features/medicines/domain/medicine.dart';
 
 class FakeFeverRepository implements FeverRepository {
   FakeFeverRepository({this.entries = const []});
@@ -35,9 +36,68 @@ class FakeFeverRepository implements FeverRepository {
       createEntry(input);
 }
 
+class FakeMedicineRepository implements MedicineRepository {
+  FakeMedicineRepository({this.medicines = const []});
+  List<Medicine> medicines;
+
+  @override
+  Future<List<Medicine>> listMedicines() async => medicines;
+
+  @override
+  Future<Medicine> createMedicine(MedicineInput input) async {
+    final medicine = Medicine(
+      id: 'new-medicine',
+      name: input.name,
+      dosage: input.dosage,
+      instructions: input.instructions,
+      foodTiming: input.foodTiming,
+      dosePattern: input.dosePattern,
+      scheduleMode: input.scheduleMode,
+      intervalHours: input.intervalHours,
+      intervalStartTime: input.intervalStartTime,
+      isActive: input.isActive,
+      schedules: input.schedules,
+    );
+    medicines = [medicine, ...medicines];
+    return medicine;
+  }
+
+  @override
+  Future<void> deleteMedicine(String id) async {
+    medicines = medicines.where((medicine) => medicine.id != id).toList();
+  }
+
+  @override
+  Future<Medicine> updateMedicine(String id, MedicineInput input) async {
+    final updated = Medicine(
+      id: id,
+      name: input.name,
+      dosage: input.dosage,
+      instructions: input.instructions,
+      foodTiming: input.foodTiming,
+      dosePattern: input.dosePattern,
+      scheduleMode: input.scheduleMode,
+      intervalHours: input.intervalHours,
+      intervalStartTime: input.intervalStartTime,
+      isActive: input.isActive,
+      schedules: input.schedules,
+    );
+    medicines = medicines
+        .map((item) => item.id == id ? updated : item)
+        .toList();
+    return updated;
+  }
+}
+
 void main() {
   testWidgets('shows the empty fever tracker', (tester) async {
-    await tester.pumpWidget(MediMateApp(repository: FakeFeverRepository()));
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: FakeFeverRepository(),
+        medicineRepository: FakeMedicineRepository(),
+        initialIndex: 1,
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Fever tracker'), findsOneWidget);
     expect(find.text('No fever readings yet'), findsOneWidget);
@@ -46,7 +106,13 @@ void main() {
 
   testWidgets('validates and saves a temperature reading', (tester) async {
     final repository = FakeFeverRepository();
-    await tester.pumpWidget(MediMateApp(repository: repository));
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: repository,
+        medicineRepository: FakeMedicineRepository(),
+        initialIndex: 1,
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('addEntryButton')));
     await tester.pumpAndSettle();
@@ -62,7 +128,13 @@ void main() {
     tester,
   ) async {
     final repository = FakeFeverRepository();
-    await tester.pumpWidget(MediMateApp(repository: repository));
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: repository,
+        medicineRepository: FakeMedicineRepository(),
+        initialIndex: 1,
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('addEntryButton')));
     await tester.pumpAndSettle();
@@ -93,7 +165,13 @@ void main() {
         ),
       ],
     );
-    await tester.pumpWidget(MediMateApp(repository: repository));
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: repository,
+        medicineRepository: FakeMedicineRepository(),
+        initialIndex: 1,
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('38.0°C'), findsWidgets);
     expect(find.text('Fever-range reading'), findsOneWidget);
@@ -111,5 +189,85 @@ void main() {
     await tester.pump();
 
     expect(find.text('100.4°F'), findsOneWidget);
+  });
+
+  testWidgets('shows medicine management as the default tab', (tester) async {
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: FakeFeverRepository(),
+        medicineRepository: FakeMedicineRepository(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('My medicines'), findsOneWidget);
+    expect(find.text('No medicines added'), findsOneWidget);
+    expect(find.text('Add medicine'), findsOneWidget);
+  });
+
+  testWidgets('requires a dose time before saving medicine', (tester) async {
+    final repository = FakeMedicineRepository();
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: FakeFeverRepository(),
+        medicineRepository: repository,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('addMedicineButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('medicineNameField')),
+      'Vitamin D',
+    );
+    await tester.enterText(
+      find.byKey(const Key('medicineDosageField')),
+      '1 tablet',
+    );
+    await tester.ensureVisible(find.byKey(const Key('saveMedicineButton')));
+    await tester.tap(find.byKey(const Key('saveMedicineButton')));
+    await tester.pump();
+
+    expect(find.text('Add at least one dose time'), findsOneWidget);
+    expect(repository.medicines, isEmpty);
+  });
+
+  testWidgets('saves a flexible hourly-gap prescription', (tester) async {
+    final repository = FakeMedicineRepository();
+    await tester.pumpWidget(
+      MediMateApp(
+        repository: FakeFeverRepository(),
+        medicineRepository: repository,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('addMedicineButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('medicineNameField')),
+      'Medicine A',
+    );
+    await tester.enterText(
+      find.byKey(const Key('medicineDosageField')),
+      '1 tablet',
+    );
+    await tester.enterText(find.byKey(const Key('dosePatternField')), '1-1-1');
+    await tester.ensureVisible(find.text('Hourly gap'));
+    await tester.tap(find.text('Hourly gap'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('6 hours'));
+    await tester.tap(find.text('6 hours'));
+    await tester.tap(find.byKey(const Key('intervalStartTimeButton')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('saveMedicineButton')));
+    await tester.tap(find.byKey(const Key('saveMedicineButton')));
+    await tester.pumpAndSettle();
+
+    expect(repository.medicines, hasLength(1));
+    expect(repository.medicines.single.dosePattern, '1-1-1');
+    expect(repository.medicines.single.scheduleMode, 'interval');
+    expect(repository.medicines.single.intervalHours, 6);
   });
 }
