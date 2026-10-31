@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:medimate/features/fever/domain/fever_entry.dart';
-
-enum TemperatureUnit { celsius, fahrenheit }
+import 'package:medimate/features/fever/domain/temperature_unit.dart';
 
 class FeverEntrySheet extends StatefulWidget {
   const FeverEntrySheet({
@@ -42,7 +41,7 @@ class _FeverEntrySheetState extends State<FeverEntrySheet> {
     _unit = widget.initialUnit;
     final initialTemperature = entry == null
         ? null
-        : _displayTemperature(entry.temperatureC, _unit);
+        : _unit.displayValue(entry.temperatureC);
     _temperatureController = TextEditingController(
       text: initialTemperature?.toStringAsFixed(1) ?? '',
     );
@@ -261,9 +260,7 @@ class _FeverEntrySheetState extends State<FeverEntrySheet> {
         .toSet()
         .toList();
     final enteredTemperature = double.parse(_temperatureController.text.trim());
-    final temperatureC = _unit == TemperatureUnit.celsius
-        ? enteredTemperature
-        : (enteredTemperature - 32) * 5 / 9;
+    final temperatureC = _unit.toCelsius(enteredTemperature);
     Navigator.pop(
       context,
       FeverEntryInput(
@@ -279,22 +276,15 @@ class _FeverEntrySheetState extends State<FeverEntrySheet> {
     );
   }
 
-  double _displayTemperature(double celsius, TemperatureUnit unit) {
-    return unit == TemperatureUnit.celsius ? celsius : (celsius * 9 / 5) + 32;
-  }
-
   void _changeUnit(TemperatureUnit nextUnit) {
     if (nextUnit == _unit) return;
     final currentValue = double.tryParse(_temperatureController.text.trim());
     setState(() {
       if (currentValue != null) {
-        final celsius = _unit == TemperatureUnit.celsius
-            ? currentValue
-            : (currentValue - 32) * 5 / 9;
-        _temperatureController.text = _displayTemperature(
-          celsius,
-          nextUnit,
-        ).toStringAsFixed(1);
+        final celsius = _unit.toCelsius(currentValue);
+        _temperatureController.text = nextUnit
+            .displayValue(celsius)
+            .toStringAsFixed(1);
       }
       _unit = nextUnit;
     });

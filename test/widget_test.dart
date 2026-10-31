@@ -76,4 +76,35 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.entries.single.temperatureC, closeTo(38, 0.01));
   });
+
+  testWidgets('switches the latest reading between Celsius and Fahrenheit', (
+    tester,
+  ) async {
+    final repository = FakeFeverRepository(
+      entries: [
+        FeverEntry(
+          id: 'reading',
+          temperatureC: 38,
+          measuredAt: DateTime(2026, 10, 31, 19, 30),
+          measurementMethod: 'oral',
+          symptoms: const [],
+          notes: null,
+          medicineTaken: false,
+        ),
+      ],
+    );
+    await tester.pumpWidget(MediMateApp(repository: repository));
+    await tester.pumpAndSettle();
+    expect(find.text('38.0°C'), findsWidgets);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('latestReadingUnitTabs')),
+        matching: find.text('°F'),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('100.4°F'), findsOneWidget);
+  });
 }
