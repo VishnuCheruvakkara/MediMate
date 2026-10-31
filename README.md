@@ -166,6 +166,39 @@ flutter pub get
 flutter run --dart-define-from-file=.env.flutter.json
 ```
 
+If Flutter is not yet available on your shell `PATH`, use its full location on
+this Ubuntu setup:
+
+```bash
+/home/unknown/development/flutter/bin/flutter pub get
+/home/unknown/development/flutter/bin/flutter run -d chrome --dart-define-from-file=.env.flutter.json
+```
+
+## Run the frontend and backend together
+
+Both services must remain running, so open two terminals.
+
+In **Terminal 1**, start FastAPI:
+
+```bash
+cd /home/unknown/Projects/MediMate/backend
+source .venv/bin/activate
+uvicorn app.api:app --reload
+```
+
+The backend API documentation is available at `http://127.0.0.1:8000/docs`.
+
+In **Terminal 2**, start Flutter in Chrome:
+
+```bash
+cd /home/unknown/Projects/MediMate
+/home/unknown/development/flutter/bin/flutter pub get
+/home/unknown/development/flutter/bin/flutter run -d chrome --dart-define-from-file=.env.flutter.json
+```
+
+Press `r` in the Flutter terminal for hot reload or `q` to stop it. Stop the
+backend with `Ctrl+C`.
+
 ## Configuration and secrets
 
 Local configuration files are intentionally excluded from Git:
