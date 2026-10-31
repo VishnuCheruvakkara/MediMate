@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import StrEnum
 from uuid import UUID
 
@@ -64,10 +64,25 @@ class FeverEntryUpdate(BaseModel):
         return list(dict.fromkeys(cleaned))
 
 
-class FeverEntryRead(FeverEntryCreate):
+class FeverEntryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    temperature_c: float
+    measured_at: datetime
+    measurement_method: MeasurementMethod
+    symptoms: list[str]
+    notes: str | None
+    medicine_taken: bool
     created_at: datetime
     updated_at: datetime
+
+    @field_validator("measured_at")
+    @classmethod
+    def normalize_database_timezone(cls, value: datetime) -> datetime:
+        # SQLite does not preserve timezone metadata. Inputs are normalized to
+        # UTC before storage, so a naive value read from SQLite represents UTC.
+        if value.tzinfo is None or value.utcoffset() is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
 

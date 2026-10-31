@@ -136,8 +136,9 @@ From the repository root, create the ignored local configuration:
 cp .env.flutter.example .env.flutter.json
 ```
 
-The default `API_BASE_URL` is `http://10.0.2.2:8000`, which lets an Android
-emulator reach a backend running on the Ubuntu host.
+The default `API_BASE_URL` is `http://127.0.0.1:8000` for the Chrome preview.
+For an Android emulator, change it to `http://10.0.2.2:8000` so the emulator
+can reach a backend running on the Ubuntu host.
 
 For a physical Android phone, use the computer's LAN address in the ignored
 `.env.flutter.json` file, for example:
@@ -165,6 +166,39 @@ Only use this development server on a trusted local network.
 flutter pub get
 flutter run --dart-define-from-file=.env.flutter.json
 ```
+
+If Flutter is not yet available on your shell `PATH`, use its full location on
+this Ubuntu setup:
+
+```bash
+/home/unknown/development/flutter/bin/flutter pub get
+/home/unknown/development/flutter/bin/flutter run -d chrome --dart-define-from-file=.env.flutter.json
+```
+
+## Run the frontend and backend together
+
+Both services must remain running, so open two terminals.
+
+In **Terminal 1**, start FastAPI:
+
+```bash
+cd /home/unknown/Projects/MediMate/backend
+source .venv/bin/activate
+uvicorn app.api:app --reload
+```
+
+The backend API documentation is available at `http://127.0.0.1:8000/docs`.
+
+In **Terminal 2**, start Flutter in Chrome:
+
+```bash
+cd /home/unknown/Projects/MediMate
+/home/unknown/development/flutter/bin/flutter pub get
+/home/unknown/development/flutter/bin/flutter run -d chrome --dart-define-from-file=.env.flutter.json
+```
+
+Press `r` in the Flutter terminal for hot reload or `q` to stop it. Stop the
+backend with `Ctrl+C`.
 
 ## Configuration and secrets
 
