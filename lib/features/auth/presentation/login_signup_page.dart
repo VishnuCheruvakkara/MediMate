@@ -4,12 +4,21 @@ import 'package:medimate/core/widgets/app_brand_title.dart';
 import 'package:medimate/features/auth/data/auth_api_repository.dart';
 import 'package:medimate/features/auth/domain/auth_repository.dart';
 import 'package:medimate/features/fever/data/fever_api_repository.dart';
+import 'package:medimate/features/fever/domain/fever_entry.dart';
 import 'package:medimate/features/medicines/data/medicine_api_repository.dart';
+import 'package:medimate/features/medicines/domain/medicine.dart';
 
 class LoginSignupPage extends StatefulWidget {
-  const LoginSignupPage({super.key, this.authRepository});
+  const LoginSignupPage({
+    super.key,
+    this.authRepository,
+    this.medicineRepository,
+    this.feverRepository,
+  });
 
   final AuthRepository? authRepository;
+  final MedicineRepository? medicineRepository;
+  final FeverRepository? feverRepository;
 
   @override
   State<LoginSignupPage> createState() => _LoginSignupPageState();
@@ -66,8 +75,9 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute<void>(
           builder: (_) => HomeShell(
-            medicineRepository: MedicineApiRepository(),
-            feverRepository: FeverApiRepository(),
+            medicineRepository: widget.medicineRepository ?? MedicineApiRepository(),
+            feverRepository: widget.feverRepository ?? FeverApiRepository(),
+            authRepository: _authRepository,
           ),
         ),
         (route) => false,

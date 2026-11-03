@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:medimate/app/home_shell.dart';
 import 'package:medimate/core/widgets/app_brand_title.dart';
+import 'package:medimate/features/auth/data/auth_api_repository.dart';
+import 'package:medimate/features/auth/domain/auth_repository.dart';
 import 'package:medimate/features/auth/presentation/login_signup_page.dart';
 import 'package:medimate/features/fever/data/fever_api_repository.dart';
+import 'package:medimate/features/fever/domain/fever_entry.dart';
 import 'package:medimate/features/medicines/data/medicine_api_repository.dart';
+import 'package:medimate/features/medicines/domain/medicine.dart';
 
 class OnboardingPage extends StatelessWidget {
-  const OnboardingPage({super.key});
+  const OnboardingPage({
+    super.key,
+    this.authRepository,
+    this.medicineRepository,
+    this.feverRepository,
+  });
+
+  final AuthRepository? authRepository;
+  final MedicineRepository? medicineRepository;
+  final FeverRepository? feverRepository;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final medRepo = medicineRepository ?? MedicineApiRepository();
+    final fevRepo = feverRepository ?? FeverApiRepository();
+    final authRepo = authRepository ?? AuthApiRepository();
 
     return Scaffold(
       body: SafeArea(
@@ -30,29 +46,34 @@ class OnboardingPage extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              _FeatureTile(
+              const _FeatureTile(
                 icon: Icons.medication_outlined,
                 title: 'Medicine Schedules',
                 subtitle: 'Organize prescriptions, repeat intervals, and dose times.',
               ),
               const SizedBox(height: 16),
-              _FeatureTile(
+              const _FeatureTile(
                 icon: Icons.thermostat_outlined,
                 title: 'Fever & Symptom Log',
                 subtitle: 'Accurately record temperature with clinical context.',
               ),
               const SizedBox(height: 16),
-              _FeatureTile(
+              const _FeatureTile(
                 icon: Icons.offline_bolt_outlined,
                 title: 'Works Offline',
                 subtitle: 'Keep tracking your health records even without internet.',
               ),
               const Spacer(),
               FilledButton(
+                key: const Key('getStartedButton'),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const LoginSignupPage(),
+                      builder: (_) => LoginSignupPage(
+                        authRepository: authRepo,
+                        medicineRepository: medRepo,
+                        feverRepository: fevRepo,
+                      ),
                     ),
                   );
                 },
@@ -60,13 +81,15 @@ class OnboardingPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               TextButton(
+                key: const Key('continueAsGuestButton'),
                 onPressed: () {
                   // Direct preview access into HomeShell
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute<void>(
                       builder: (_) => HomeShell(
-                        medicineRepository: MedicineApiRepository(),
-                        feverRepository: FeverApiRepository(),
+                        medicineRepository: medRepo,
+                        feverRepository: fevRepo,
+                        authRepository: authRepo,
                       ),
                     ),
                   );

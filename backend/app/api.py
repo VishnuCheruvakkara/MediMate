@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.database import Base, engine
+from app.features.auth.router import router as auth_router
 from app.features.fever.router import router as fever_router
 from app.features.medicines.router import router as medicines_router
 from app.features.medicines.migrations import ensure_development_columns
@@ -34,6 +35,7 @@ if settings.cors_origins or settings.cors_origin_regex:
 
 app.include_router(medicines_router, prefix="/api/v1")
 app.include_router(fever_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["health"])
